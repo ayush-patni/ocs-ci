@@ -30,7 +30,6 @@ from ocs_ci.utility.utils import TimeoutSampler
 from ocs_ci.ocs.exceptions import UsernameNotFoundException, CommandFailed
 from ocs_ci.helpers import cnv_helpers
 
-
 logger = logging.getLogger(__name__)
 
 

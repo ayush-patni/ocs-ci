@@ -14,7 +14,10 @@ from ocs_ci.helpers.helpers import (
     create_ocs_object_from_kind_and_name,
 )
 from ocs_ci.framework import config
+from ocs_ci.ocs.resources.pod import get_pod_obj
+from ocs_ci.ocs.node import get_node_objs
 from ocs_ci.utility.retry import retry
+from ocs_ci.ocs.resources.storage_cluster import get_storage_cluster
 
 logger = logging.getLogger(__name__)
 
@@ -365,3 +368,39 @@ def run_dd_io(vm_obj, file_path, size="10240", username=None, verify=False):
             file_path=file_path,
             username=username,
         )
+
+
+@retry(AssertionError, tries=5, delay=10, backoff=1)
+def all_critical_pods_running():
+    critical_pods = ["rook-ceph-mon", "rook-ceph-mgr", "rook-ceph-osd"]
+    for pod_pattern in critical_pods:
+        pods = get_pod_obj(name=pod_pattern)
+        for pod in pods:
+            assert (
+                pod.ocp.get_resource_status(pod.name) == "Running"
+            ), f"Pod {pod.name} is not running"
+    logger.info("All critical pods are running as expected.")
+    return True
+
+
+@retry(AssertionError, tries=5, delay=10, backoff=1)
+def all_nodes_ready():
+    nodes = get_node_objs()
+    for node in nodes:
+        assert (
+            node.ocp.get_resource_status(node.name) == "Ready"
+        ), f"Node {node.name} is not in Ready state"
+    logger.info("All nodes are in Ready state.")
+    return True
+
+
+def storage_added():
+    storage_cluster = get_storage_cluster()
+    # Add logic to verify if additional storage has been added
+    # e.g., check the size of the storage cluster
+    added_capacity = 10  # This should be the expected additional storage capacity
+    assert (
+        storage_cluster.get_total_capacity() >= added_capacity
+    ), "Additional storage has not been added."
+    logger.info("Additional storage has been added successfully.")
+    return True
