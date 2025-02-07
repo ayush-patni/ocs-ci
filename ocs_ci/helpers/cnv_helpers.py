@@ -17,7 +17,6 @@ from ocs_ci.framework import config
 from ocs_ci.ocs.resources.pod import get_pod_obj
 from ocs_ci.ocs.node import get_node_objs
 from ocs_ci.utility.retry import retry
-from ocs_ci.ocs.resources.storage_cluster import get_storage_cluster
 
 logger = logging.getLogger(__name__)
 
@@ -391,16 +390,4 @@ def all_nodes_ready():
             node.ocp.get_resource_status(node.name) == "Ready"
         ), f"Node {node.name} is not in Ready state"
     logger.info("All nodes are in Ready state.")
-    return True
-
-
-def storage_added():
-    storage_cluster = get_storage_cluster()
-    # Add logic to verify if additional storage has been added
-    # e.g., check the size of the storage cluster
-    added_capacity = 10  # This should be the expected additional storage capacity
-    assert (
-        storage_cluster.get_total_capacity() >= added_capacity
-    ), "Additional storage has not been added."
-    logger.info("Additional storage has been added successfully.")
     return True
