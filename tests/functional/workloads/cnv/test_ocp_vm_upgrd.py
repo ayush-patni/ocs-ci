@@ -14,9 +14,9 @@ log = logging.getLogger(__name__)
 @magenta_squad
 class TestOcvUpgrade(E2ETest):
     """
-    Test ODF upgrade while VMs are in different states,
+    Test OCV upgrade while VMs are in different states,
     snapshots and clone exists and while performing
-    various operation during upgrade
+    various operation during operator upgrade
     """
 
     @workloads
@@ -149,7 +149,7 @@ class TestOcvUpgrade(E2ETest):
 
         # execution
 
-        """ Openshift Upgrade Process """
+        """ Openshift Virtualization Upgrade Process """
 
         """ Taking snapshots of newly created vm, restore a snapshot to a VM"""
         """ Clone of newly created snapshots """
