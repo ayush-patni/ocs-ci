@@ -39,7 +39,7 @@ class TestVmStorageCapacity(E2ETest):
         """
         Test steps:
         1. Keep IO operations going on VMs, with snapshots and clones present.
-        2. Keep VMs in different states (power on, paused, stopped).
+        2. Keep VMs in different states (running, paused, stopped).
         3. Perform add capacity using official docs.
         4. Verify Cluster Stability and Data Integrity.
         5. Ensure the additional storage has been added.
