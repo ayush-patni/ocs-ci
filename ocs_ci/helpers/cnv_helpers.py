@@ -14,7 +14,6 @@ from ocs_ci.helpers.helpers import (
     create_ocs_object_from_kind_and_name,
 )
 from ocs_ci.framework import config
-from ocs_ci.ocs.resources.pod import get_pod_obj
 from ocs_ci.ocs.node import get_node_objs
 from ocs_ci.utility.retry import retry
 
@@ -367,19 +366,6 @@ def run_dd_io(vm_obj, file_path, size="10240", username=None, verify=False):
             file_path=file_path,
             username=username,
         )
-
-
-@retry(AssertionError, tries=5, delay=10, backoff=1)
-def all_critical_pods_running():
-    critical_pods = ["rook-ceph-mon", "rook-ceph-mgr", "rook-ceph-osd"]
-    for pod_pattern in critical_pods:
-        pods = get_pod_obj(name=pod_pattern)
-        for pod in pods:
-            assert (
-                pod.ocp.get_resource_status(pod.name) == "Running"
-            ), f"Pod {pod.name} is not running"
-    logger.info("All critical pods are running as expected.")
-    return True
 
 
 @retry(AssertionError, tries=5, delay=10, backoff=1)
