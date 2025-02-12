@@ -11,7 +11,8 @@ from ocs_ci.helpers.cnv_helpers import (
 from ocs_ci.helpers.keyrotation_helper import PVKeyrotation
 from ocs_ci.ocs import constants
 from ocs_ci.ocs.resources import storage_cluster
-from ocs_ci.ocs.resources.pod import get_pod_restarts_count
+from ocs_ci.ocs.resources.pod import get_pod_restarts_count, wait_for_pods_to_be_running
+from ocs_ci.utility.utils import TimeoutSampler
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class TestVmStorageCapacity(E2ETest):
 
     def test_vm_storage_capacity(
         self,
-        setup_cnv,
+        # setup_cnv,
         pv_encryption_kms_setup_factory,
         storageclass_factory,
         project_factory,
@@ -104,16 +105,42 @@ class TestVmStorageCapacity(E2ETest):
         for vm in vm_pause:
             vm.pause()
 
-        logger.info("Verifying cluster stability...")
+        logger.info("Verifying cluster stability before capacity addition...")
         assert all_nodes_ready(), "Some nodes are not ready!"
+
+        sample = TimeoutSampler(
+            timeout=600,
+            sleep=10,
+            func=wait_for_pods_to_be_running,
+            namespace=constants.OPENSHIFT_STORAGE_NAMESPACE,
+        )
+        assert sample.wait_for_func_status(
+            result=True
+        ), "Not all OCS pods are running before capacity addition."
+
         osd_pods_restart_count_before = get_pod_restarts_count(
             label=constants.OSD_APP_LABEL
         )
 
         # Perform add capacity operation
         osd_size = storage_cluster.get_osd_size()
+        logger.info(f"Adding {osd_size} to existing storageclass capacity")
         storage_cluster.add_capacity(osd_size)
         logger.info("Successfully added capacity")
+
+        logger.info("Verifying cluster stability after capacity addition...")
+        assert all_nodes_ready(), "Some nodes are not ready!"
+
+        sample = TimeoutSampler(
+            timeout=600,
+            sleep=10,
+            func=wait_for_pods_to_be_running,
+            namespace=constants.OPENSHIFT_STORAGE_NAMESPACE,
+        )
+
+        assert sample.wait_for_func_status(
+            result=True
+        ), "Not all pods are running after capacity addition."
 
         osd_pods_restart_count_after = get_pod_restarts_count(
             label=constants.OSD_APP_LABEL
