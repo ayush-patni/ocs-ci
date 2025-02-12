@@ -28,7 +28,7 @@ class TestVmStorageCapacity(E2ETest):
 
     def test_vm_storage_capacity(
         self,
-        # setup_cnv,
+        setup_cnv,
         pv_encryption_kms_setup_factory,
         storageclass_factory,
         project_factory,
